@@ -138,11 +138,11 @@ Resources:
             - 'iam:PassRole'
           Resource: '*'
           Effect: Allow
-        # - Action:
-        #     - 'codebuild:BatchGetBuilds'
-        #     - 'codebuild:StartBuild'
-        #   Resource: '*'
-        #   Effect: Allow
+        - Action:
+            - 'codebuild:BatchGetBuilds'
+            - 'codebuild:StartBuild'
+          Resource: '*'
+          Effect: Allow
       Roles: [!Ref CodePipelineTrustRole]
   CloudFormationTrustRole:
     Description: Service role for AWS CloudFormation
