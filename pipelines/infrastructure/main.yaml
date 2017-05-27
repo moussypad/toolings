@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Main for Infrastructure Pipeline
+Parameters:
+  DomainName:
+    Description: e.g. example.com
+    Type: String
+    AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<![.-])
+    ConstraintDescription: Must be a valid domain name
+  SharedStackName:
+    Type: String
+  Template:
+    Type: String
+  TemplateConfiguration:
+    Type: String
+    Default: beta.json
+  GitHubRepoName:
+    Type: String
+  GitHubRepoBranch:
+    Type: String
+    Default: master
+  GitHubUser:
+    Type: String
+  GitHubToken:
+    NoEcho: true
+    Type: String
+Resources:
+  InfrastructureServiceRolesStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        DomainName: !Ref DomainName
+      TemplateURL: !Sub https://s3-${AWS::Region}.amazonaws.com/tools-team/toolings/infrastructure-pipeline/service-roles.yaml
+  InfrastructurePipelineStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: [InfrastructureServiceRolesStack]
+    Properties:
+      Parameters:
+        DomainName: !Ref DomainName
+        SharedStackName: !Ref SharedStackName
+        Template: !Ref Template
+        TemplateConfiguration: !Ref TemplateConfiguration
+        GitHubRepoName: !Ref GitHubRepoName
+        GitHubRepoBranch: !Ref GitHubRepoBranch
+        GitHubUser: !Ref GitHubUser
+        GitHubToken: !Ref GitHubToken
+        CodePipelineRoleArn: !GetAtt InfrastructureServiceRolesStack.Outputs.CodePipelineRoleArn
+        CloudFormationRoleArn: !GetAtt InfrastructureServiceRolesStack.Outputs.CloudFormationRoleArn
+      TemplateURL: !Sub https://s3-${AWS::Region}.amazonaws.com/tools-team/toolings/infrastructure-pipeline/pipeline.yaml
+      #   CloudFormationRole: !GetAtt NetworkResourcesRoles.Outputs.CloudformationRole
+      #   CodePipelineRole: !GetAtt NetworkResourcesRoles.Outputs.CodePipelineRole
+      # TemplateURL: !Sub 
+      #   - "https://s3-${AWS::Region}.amazonaws.com/${tmp}-${AWS::Region}-${AWS::AccountId}-toolings/network-resources-pipeline/pipeline.yaml"
+      #   - { tmp: !Select [0, !Split [".", !Ref DomainName]] }
+# Outputs:
+#   CodePipelineRole:
+#     Value: !GetAtt InfrastructureRoles.Outputs.CodePipelineRole
+#   CloudFormationRole:
+#     Value: !GetAtt NetworkResourcesRoles.Outputs.CloudFormationRole
