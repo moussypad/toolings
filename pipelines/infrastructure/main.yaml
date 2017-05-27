@@ -11,7 +11,13 @@ Metadata:
           - SharedStackName
       -
         Label:
-          default: Cloudformation Configuration
+          default: CodeBuild Configuration
+        Parameters:
+          - Template
+          - TemplateConfiguration
+      -
+        Label:
+          default: CloudFormation Configuration
         Parameters:
           - Template
           - TemplateConfiguration
@@ -28,6 +34,8 @@ Metadata:
         default: Domain Name
       SharedStackName:
         default: Shared Stack Name
+      CodeBuildImage:
+        default: CodeBuild Image
       Template:
         default: Template
       TemplateConfiguration:
@@ -49,6 +57,10 @@ Parameters:
   SharedStackName:
     Description: Shared resources for pipeline. ( Must have created the shared stack before this one. )
     Type: String
+  CodeBuildImage:
+    Type: String
+    Default: "aws/codebuild/nodejs:7.0.0"
+    Description: Image used for CodeBuild project.
   Template:
     Description: Filename for Cloudformation/SAM.
     Type: String
@@ -83,10 +95,12 @@ Resources:
         SharedStackName: !Ref SharedStackName
         Template: !Ref Template
         TemplateConfiguration: !Ref TemplateConfiguration
+        CodeBuildImage: !Ref CodeBuildImage
         GitHubRepoName: !Ref GitHubRepoName
         GitHubRepoBranch: !Ref GitHubRepoBranch
         GitHubUser: !Ref GitHubUser
         GitHubToken: !Ref GitHubToken
+        CodeBuildRoleArn: !GetAtt InfrastructureServiceRolesStack.Outputs.CodeBuildRoleArn
         CodePipelineRoleArn: !GetAtt InfrastructureServiceRolesStack.Outputs.CodePipelineRoleArn
         CloudFormationRoleArn: !GetAtt InfrastructureServiceRolesStack.Outputs.CloudFormationRoleArn
       TemplateURL: !Sub https://s3-${AWS::Region}.amazonaws.com/toolings/pipelines/infrastructure-pipeline/pipeline.yaml

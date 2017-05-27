@@ -7,6 +7,41 @@ Parameters:
     AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<![.-])
     ConstraintDescription: Must be a valid domain name
 Resources:
+  CodeBuildTrustRole:
+    Description: Service role for AWS CodeBuild
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub
+        - "${tmp}-codebuild-role"
+        - { tmp: !Select [0, !Split [".", !Ref DomainName]] }
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [codebuild.amazonaws.com]
+          Action: sts:AssumeRole
+      Path: /
+  CodeBuildRolePolicy:
+    Type: AWS::IAM::Policy
+    DependsOn: CodeBuildTrustRole
+    Description: Policy for the service role for AWS CodeBuild
+    Properties:
+      PolicyName: CodeBuildRolePolicy
+      PolicyDocument:
+        Statement:
+        - Effect: Allow
+          Action: ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+          Resource: ["*"]
+        - Effect: Allow
+          Resource: ["*"]
+          Action: ["s3:*"]
+        - Effect: Allow
+          Resource: ["*"]
+          Action: ["kms:GenerateDataKey*", "kms:Encrypt", "kms:Decrypt"]
+        - Effect: Allow
+          Resource: ["*"]
+          Action: ["sns:SendMessage"]
+      Roles: [!Ref CodeBuildTrustRole]
   CodePipelineTrustRole:
     Description: Service role for AWS CodePipeline
     Type: AWS::IAM::Role
@@ -163,6 +198,8 @@ Resources:
         #   Effect: Allow
       Roles: [!Ref CloudFormationTrustRole]
 Outputs:
+  CodeBuildRoleArn:
+    Value: !GetAtt CodeBuildTrustRole.Arn
   CodePipelineRoleArn:
     Value: !GetAtt CodePipelineTrustRole.Arn
   CloudFormationRoleArn:
