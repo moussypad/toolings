@@ -72,8 +72,9 @@ Resources:
           Effect: Allow
         - Action:
             - 's3:PutObject'
-          Resource:
-            - 'arn:aws:s3:::moussypad-codepipeline-artifact-store*'
+          Resource: !Sub
+            - "arn:aws:s3:::${tmp}-codepipeline-artifacts*"
+            - { tmp: !Select [0, !Split [".", !Ref DomainName]] }
             # - 'arn:aws:s3:::elasticbeanstalk*'
           Effect: Allow
         # - Action:
