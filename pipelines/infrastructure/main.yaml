@@ -85,7 +85,7 @@ Resources:
     Properties:
       Parameters:
         DomainName: !Ref DomainName
-      TemplateURL: !Sub https://s3-${AWS::Region}.amazonaws.com/toolings/pipelines/infrastructure-pipeline/service-roles.yaml
+      TemplateURL: !Sub https://s3-${AWS::Region}.amazonaws.com/toolings/pipelines/infrastructure/service-roles.yaml
   InfrastructurePipelineStack:
     Type: AWS::CloudFormation::Stack
     DependsOn: [InfrastructureServiceRolesStack]
@@ -103,7 +103,7 @@ Resources:
         CodeBuildRoleArn: !GetAtt InfrastructureServiceRolesStack.Outputs.CodeBuildRoleArn
         CodePipelineRoleArn: !GetAtt InfrastructureServiceRolesStack.Outputs.CodePipelineRoleArn
         CloudFormationRoleArn: !GetAtt InfrastructureServiceRolesStack.Outputs.CloudFormationRoleArn
-      TemplateURL: !Sub https://s3-${AWS::Region}.amazonaws.com/toolings/pipelines/infrastructure-pipeline/pipeline.yaml
+      TemplateURL: !Sub https://s3-${AWS::Region}.amazonaws.com/toolings/pipelines/infrastructure/pipeline.yaml
       #   CloudFormationRole: !GetAtt NetworkResourcesRoles.Outputs.CloudformationRole
       #   CodePipelineRole: !GetAtt NetworkResourcesRoles.Outputs.CodePipelineRole
       # TemplateURL: !Sub 
