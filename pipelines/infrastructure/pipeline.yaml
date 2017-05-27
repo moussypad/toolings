@@ -54,9 +54,7 @@ Resources:
           - Name: S3_BUCKET_FOR_ARTIFACT
             Value: 
               Fn::ImportValue:
-                !Sub 
-                  - ${tmp}-codepipeline-artifacts
-                  - { tmp: !Select [0, !Split [".", !Ref DomainName]] }
+                !Sub ${SharedStackName}-S3ArtifactBucketName
           - Name: TEMPLATE
             Value: !Ref Template
         Image: !Ref CodeBuildImage
