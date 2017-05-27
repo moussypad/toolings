@@ -4,6 +4,6 @@
 set -e 
 for f in `pwd`/**/*/*.yaml
 do
-  aws cloudformation validate-template --template-body file://$f
   echo $f
+  aws cloudformation validate-template --template-body file://$f
 done
