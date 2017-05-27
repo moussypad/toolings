@@ -1,0 +1,20 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Setup the shared resources for toolings
+Parameters:
+  DomainName:
+    Description: e.g. example.com
+    Type: String
+    AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<![.-])
+    ConstraintDescription: Must be a valid domain name
+Resources:
+  S3ArtifactBucketStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        DomainName: !Ref DomainName
+      TemplateURL: !Sub https://s3-${AWS::Region}.amazonaws.com/tools-team/toolings/shared/codepipeline-artifact-bucket.yaml
+Outputs:
+  S3ArtifactBucketName:
+    Value: !GetAtt S3ArtifactBucketStack.Outputs.S3ArtifactBucketName
+    Export:
+      Name: !Sub ${AWS::StackName}-S3ArtifactBucketName
