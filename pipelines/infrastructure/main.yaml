@@ -1,5 +1,51 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Main for Infrastructure Pipeline
+Description: Main for Infrastructure 
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - 
+        Label:
+          default: General Configuration
+        Parameters:
+          - DomainName
+          - SharedStackName
+      -
+        Label:
+          default: Cloudformation Configuration
+        Parameters:
+          - Template
+          - TemplateConfiguration
+      -
+        Label:
+          default: GitHub Configuration
+        Parameters:
+          - GitHubRepoName
+          - GitHubRepoBranch
+          - GitHubUser
+          - GitHubToken
+    ParameterLabels:
+      DomainName:
+        Description: e.g. example.com
+        Type: String
+        AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<![.-])
+        ConstraintDescription: Must be a valid domain name
+      SharedStackName:
+        Description: shared resources for pipeline (Must have created the shared stack before this one)
+        Type: String
+      Template:
+        Description: filename for Cloudformation/SAM
+        Type: String
+      TemplateConfiguration:
+        Description: filename for Cloudformation/SAM configuration
+        Type: String
+      GitHubRepoName:
+        default: Repository
+      GitHubRepoBranch:
+        default: Branch
+      GitHubUser:
+        default: Username
+      GitHubToken:
+        default: Secret
 Parameters:
   DomainName:
     Description: e.g. example.com
