@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: Service roles for Infrastructure pipeline
 Parameters:
-DomainName:
+  DomainName:
     Description: e.g. example.com
     Type: String
     AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<![.-])
