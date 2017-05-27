@@ -27,7 +27,7 @@ Metadata:
       DomainName:
         default: Domain Name
       SharedStackName:
-        default: Stack Name for shared resources
+        default: Shared Stack Name
       Template:
         default: Template
       TemplateConfiguration:
@@ -42,18 +42,19 @@ Metadata:
         default: Secret
 Parameters:
   DomainName:
-    Description: e.g. example.com
+    Description: E.g. example.com
     Type: String
     AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<![.-])
     ConstraintDescription: Must be a valid domain name
   SharedStackName:
-    Description: shared resources for pipeline (Must have created the shared stack before this one)
+    Description: Shared resources for pipeline. ( Must have created the shared stack before this one. )
     Type: String
   Template:
-    Description: filename for Cloudformation/SAM
+    Description: Filename for Cloudformation/SAM.
     Type: String
+    Default: template.yaml
   TemplateConfiguration:
-    Description: filename for Cloudformation/SAM configuration
+    Description: Filename for Cloudformation/SAM configuration. (  Leave empty if no config file is needed. )
     Type: String
     Default: beta.json
   GitHubRepoName:
