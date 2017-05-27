@@ -7,7 +7,6 @@ dependencies:
 test:
   override:
     - ./test-script.sh
-    # - aws cloudformation validate-template --template-body file:///development/github/moussypad/toolings/pipelines/infrastructure-pipeline/main.yaml
 deployment:
   prod:
     branch: master
