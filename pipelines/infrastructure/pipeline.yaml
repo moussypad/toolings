@@ -57,8 +57,6 @@ Resources:
                 !Sub ${SharedStackName}-S3ArtifactBucketName
           - Name: TEMPLATE
             Value: !Ref Template
-          - Name: Template_CONFIGURATION
-            Value: !Ref TemplateConfiguration
         Image: !Ref CodeBuildImage
         Type: LINUX_CONTAINER
       Name: !Sub 
@@ -130,7 +128,6 @@ Resources:
               - "${tmp}-infrastructure"
               - { tmp: !Select [0, !Split [".", !Ref DomainName]] }
             ActionMode: CHANGE_SET_REPLACE
-            # RoleArn: !Ref CloudformationRole
             RoleArn: !Ref CloudFormationRoleArn
             ChangeSetName: !Sub
               - "${tmp}-infrastructure-changeset"
