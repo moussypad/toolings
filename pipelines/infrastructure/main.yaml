@@ -104,13 +104,3 @@ Resources:
         CodePipelineRoleArn: !GetAtt InfrastructureServiceRolesStack.Outputs.CodePipelineRoleArn
         CloudFormationRoleArn: !GetAtt InfrastructureServiceRolesStack.Outputs.CloudFormationRoleArn
       TemplateURL: !Sub https://s3-${AWS::Region}.amazonaws.com/toolings/pipelines/infrastructure/pipeline.yaml
-      #   CloudFormationRole: !GetAtt NetworkResourcesRoles.Outputs.CloudformationRole
-      #   CodePipelineRole: !GetAtt NetworkResourcesRoles.Outputs.CodePipelineRole
-      # TemplateURL: !Sub 
-      #   - "https://s3-${AWS::Region}.amazonaws.com/${tmp}-${AWS::Region}-${AWS::AccountId}-toolings/network-resources-pipeline/pipeline.yaml"
-      #   - { tmp: !Select [0, !Split [".", !Ref DomainName]] }
-# Outputs:
-#   CodePipelineRole:
-#     Value: !GetAtt InfrastructureRoles.Outputs.CodePipelineRole
-#   CloudFormationRole:
-#     Value: !GetAtt NetworkResourcesRoles.Outputs.CloudFormationRole

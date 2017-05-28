@@ -116,7 +116,7 @@ Resources:
         Actions:
         - Name: create-changeset
           InputArtifacts:
-          - Name: SourceArtifact
+          - Name: BuildArtifact
           ActionTypeId:
             Category: Deploy
             Owner: AWS
@@ -134,8 +134,8 @@ Resources:
               - "${tmp}-infrastructure-changeset"
               - { tmp: !Select [0, !Split [".", !Ref DomainName]] }
             Capabilities: CAPABILITY_NAMED_IAM
-            TemplatePath: !Sub "SourceArtifact::post-${Template}"
-            TemplateConfiguration: !If [ HasConfigVariables, !Sub "SourceArtifact::${TemplateConfiguration}", !Ref "AWS::NoValue" ]
+            TemplatePath: !Sub "BuildArtifact::post-${Template}"
+            TemplateConfiguration: !If [ HasConfigVariables, !Sub "BuildArtifact::${TemplateConfiguration}", !Ref "AWS::NoValue" ]
           RunOrder: 1
         - Name: approve-changeSet
           ActionTypeId:
