@@ -37,7 +37,7 @@ Resources:
           Action: ["s3:*"]
         - Effect: Allow
           Resource: ["*"]
-          Action: CloudFormation:ValidateTemplate
+          Action: ["CloudFormation:*"]
         - Effect: Allow
           Resource: ["*"]
           Action: ["kms:GenerateDataKey*", "kms:Encrypt", "kms:Decrypt"]
