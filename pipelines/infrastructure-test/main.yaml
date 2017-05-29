@@ -101,6 +101,6 @@ Resources:
         GitHubUser: !Ref GitHubUser
         GitHubToken: !Ref GitHubToken
         CodeBuildRoleArn: !GetAtt InfrastructureServiceRolesStack.Outputs.CodeBuildRoleArn
-        CodePipelineRoleArn: !GetAtt InfrastructureServiceRolesStack.Outputs.CodePipelineRoleArn
+        # CodePipelineRoleArn: !GetAtt InfrastructureServiceRolesStack.Outputs.CodePipelineRoleArn
         CloudFormationRoleArn: !GetAtt InfrastructureServiceRolesStack.Outputs.CloudFormationRoleArn
       TemplateURL: !Sub https://s3-${AWS::Region}.amazonaws.com/toolings/pipelines/infrastructure/pipeline.yaml

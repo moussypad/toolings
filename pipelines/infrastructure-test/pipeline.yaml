@@ -29,8 +29,8 @@ Parameters:
     Type: String
   CodeBuildRoleArn:
     Type: String
-  CodePipelineRoleArn:
-    Type: String
+  # CodePipelineRoleArn:
+  #   Type: String
   CloudFormationRoleArn:
     Type: String
 Conditions:
@@ -76,7 +76,9 @@ Resources:
       Name: !Sub 
         - "${tmp}-infrastructure-pipeline"
         - { tmp: !Select [0, !Split [".", !Ref DomainName]] }
-      RoleArn: !Ref CodePipelineRoleArn
+      RoleArn: 
+        Fn::ImportValue:
+          !Sub ${SharedStackName}-CodePipelineDefaultRole
       Stages:
       - Name: Source
         Actions:
