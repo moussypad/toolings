@@ -1,29 +1,29 @@
-AWSTemplateFormatVersion: "2010-09-09"
-Description: Main for Infrastructure 
+AWSTemplateFormatVersion: 2010-09-09
+Description: "Main for infrastructure pipeline" 
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterGroups:
       - 
         Label:
-          default: General Configuration
+          default: "General Configuration"
         Parameters:
           - DomainName
           - SharedStackName
       -
         Label:
-          default: CodeBuild Configuration
+          default: "CodeBuild Configuration"
         Parameters:
           - Template
           - TemplateConfiguration
       -
         Label:
-          default: CloudFormation Configuration
+          default: "CloudFormation Configuration"
         Parameters:
           - Template
           - TemplateConfiguration
       -
         Label:
-          default: GitHub Configuration
+          default: "GitHub Configuration"
         Parameters:
           - GitHubRepoName
           - GitHubRepoBranch
@@ -50,25 +50,25 @@ Metadata:
         default: Secret
 Parameters:
   DomainName:
-    Description: E.g. example.com
+    Description: "E.g. example.com"
     Type: String
     AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<![.-])
-    ConstraintDescription: Must be a valid domain name
+    ConstraintDescription: "Must be a valid domain name"
   SharedStackName:
-    Description: Shared resources for pipeline. ( Must have created the shared stack before this one. )
+    Description: "Shared resources for pipeline. ( Must have created the shared stack before this one. )"
     Type: String
   CodeBuildImage:
     Type: String
     Default: "aws/codebuild/nodejs:7.0.0"
     Description: Image used for CodeBuild project.
   Template:
-    Description: Filename for Cloudformation/SAM.
+    Description: "Filename for Cloudformation/SAM."
     Type: String
-    Default: template.yaml
+    Default: "template.yaml"
   TemplateConfiguration:
-    Description: Filename for Cloudformation/SAM configuration. (  Leave empty if no config file is needed. )
+    Description: "Filename for Cloudformation/SAM configuration. (  Leave empty if no config file is needed. )"
     Type: String
-    Default: beta.json
+    Default: "beta.json"
   GitHubRepoName:
     Type: String
   GitHubRepoBranch:
@@ -80,15 +80,15 @@ Parameters:
     NoEcho: true
     Type: String
 Resources:
-  InfrastructureServiceRolesStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      Parameters:
-        DomainName: !Ref DomainName
-      TemplateURL: !Sub https://s3-${AWS::Region}.amazonaws.com/toolings/pipelines/infrastructure/service-roles.yaml
+  # InfrastructureServiceRolesStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     Parameters:
+  #       DomainName: !Ref DomainName
+  #     TemplateURL: !Sub https://s3-${AWS::Region}.amazonaws.com/toolings/pipelines/infrastructure/service-roles.yaml
   InfrastructurePipelineStack:
     Type: AWS::CloudFormation::Stack
-    DependsOn: [InfrastructureServiceRolesStack]
+    # DependsOn: [InfrastructureServiceRolesStack]
     Properties:
       Parameters:
         DomainName: !Ref DomainName
@@ -100,7 +100,16 @@ Resources:
         GitHubRepoBranch: !Ref GitHubRepoBranch
         GitHubUser: !Ref GitHubUser
         GitHubToken: !Ref GitHubToken
-        CodeBuildRoleArn: !GetAtt InfrastructureServiceRolesStack.Outputs.CodeBuildRoleArn
-        CodePipelineRoleArn: !GetAtt InfrastructureServiceRolesStack.Outputs.CodePipelineRoleArn
-        CloudFormationRoleArn: !GetAtt InfrastructureServiceRolesStack.Outputs.CloudFormationRoleArn
+        S3ArtifactBucketName:
+          Fn::ImportValue:
+            !Sub ${SharedStackName}-S3ArtifactBucketName
+        CodeBuildRoleArn:
+          Fn::ImportValue:
+            !Sub ${SharedStackName}-CodeBuildDefaultRoleArn
+        CodePipelineRoleArn:
+          Fn::ImportValue:
+            !Sub ${SharedStackName}-CodePipelineDefaultRoleArn
+        CloudFormationRoleArn:
+          Fn::ImportValue:
+            !Sub ${SharedStackName}-CloudFormationDefaultRoleArn
       TemplateURL: !Sub https://s3-${AWS::Region}.amazonaws.com/toolings/pipelines/infrastructure/pipeline.yaml

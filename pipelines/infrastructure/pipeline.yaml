@@ -1,22 +1,21 @@
-AWSTemplateFormatVersion: "2010-09-09"
-Description: Network Resources Pipeline
+AWSTemplateFormatVersion: 2010-09-09
+Description: Infrastructure Pipeline
 Parameters:
   DomainName:
-    Description: e.g. example.com
+    Description: "e.g. example.com"
     Type: String
     AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<![.-])
-    ConstraintDescription: Must be a valid domain name
+    ConstraintDescription: "Must be a valid domain name"
   SharedStackName:
     Type: String
   Template:
     Type: String
   TemplateConfiguration:
     Type: String
-    Default: beta.json
   CodeBuildImage:
     Type: String
     Default: "aws/codebuild/nodejs:7.0.0"
-    Description: Image used for CodeBuild project.
+    Description: "Image used for CodeBuild project."
   GitHubRepoName:
     Type: String
   GitHubRepoBranch:
@@ -26,6 +25,8 @@ Parameters:
     Type: String
   GitHubToken:
     NoEcho: true
+    Type: String
+  S3ArtifactBucketName:
     Type: String
   CodeBuildRoleArn:
     Type: String
@@ -39,8 +40,6 @@ Conditions:
       - !Equals [!Ref TemplateConfiguration, ""]
 Resources:
   CodeBuildProject:
-    # DependsOn: [S3Bucket]
-    Description: Creating AWS CodeBuild project
     Type: AWS::CodeBuild::Project
     Properties:
       Artifacts:
@@ -52,9 +51,7 @@ Resources:
         ComputeType: BUILD_GENERAL1_SMALL
         EnvironmentVariables:
           - Name: S3_BUCKET_FOR_ARTIFACT
-            Value: 
-              Fn::ImportValue:
-                !Sub ${SharedStackName}-S3ArtifactBucketName
+            Value: !Ref S3ArtifactBucketName
           - Name: TEMPLATE
             Value: !Ref Template
         Image: !Ref CodeBuildImage
@@ -70,7 +67,8 @@ Resources:
       #     Value: !Ref AppName
       TimeoutInMinutes: 5
   InfrastructurePipeline:
-    # DependsOn: [S3CodePipelineArtifactBucket]
+    DependsOn: 
+      - CodeBuildProject
     Type: AWS::CodePipeline::Pipeline
     Properties:
       Name: !Sub 
@@ -162,6 +160,4 @@ Resources:
           RunOrder: '3'
       ArtifactStore:
         Type: S3
-        Location: 
-          Fn::ImportValue:
-            !Sub ${SharedStackName}-S3ArtifactBucketName
+        Location: !Ref S3ArtifactBucketName
