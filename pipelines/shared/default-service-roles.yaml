@@ -26,7 +26,8 @@ Resources:
     Properties: 
       Description: "Policy for AWS CodePipeline Service"
       Path: "/"
-      Roles: !Ref CodePipelineDefaultTrustRole
+      Roles: 
+        - !Ref CodePipelineDefaultTrustRole
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
