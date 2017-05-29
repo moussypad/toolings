@@ -1,0 +1,167 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Network Resources Pipeline
+Parameters:
+  DomainName:
+    Description: e.g. example.com
+    Type: String
+    AllowedPattern: (?!-)[a-zA-Z0-9-.]{1,63}(?<![.-])
+    ConstraintDescription: Must be a valid domain name
+  SharedStackName:
+    Type: String
+  Template:
+    Type: String
+  TemplateConfiguration:
+    Type: String
+    Default: beta.json
+  CodeBuildImage:
+    Type: String
+    Default: "aws/codebuild/nodejs:7.0.0"
+    Description: Image used for CodeBuild project.
+  GitHubRepoName:
+    Type: String
+  GitHubRepoBranch:
+    Type: String
+    Default: master
+  GitHubUser:
+    Type: String
+  GitHubToken:
+    NoEcho: true
+    Type: String
+  CodeBuildRoleArn:
+    Type: String
+  CodePipelineRoleArn:
+    Type: String
+  CloudFormationRoleArn:
+    Type: String
+Conditions:
+  HasConfigVariables:
+    !Not
+      - !Equals [!Ref TemplateConfiguration, ""]
+Resources:
+  CodeBuildProject:
+    # DependsOn: [S3Bucket]
+    Description: Creating AWS CodeBuild project
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Description: !Sub 
+        - "Building stage for ${tmp}-infrastructure."
+        - { tmp: !Select [0, !Split [".", !Ref DomainName]] }
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        EnvironmentVariables:
+          - Name: S3_BUCKET_FOR_ARTIFACT
+            Value: 
+              Fn::ImportValue:
+                !Sub ${SharedStackName}-S3ArtifactBucketName
+          - Name: TEMPLATE
+            Value: !Ref Template
+        Image: !Ref CodeBuildImage
+        Type: LINUX_CONTAINER
+      Name: !Sub 
+        - "${tmp}-infrastructure-build"
+        - { tmp: !Select [0, !Split [".", !Ref DomainName]] }
+      ServiceRole: !Ref CodeBuildRoleArn
+      Source:
+        Type: CODEPIPELINE
+      # Tags:
+      #   - Key: app-name
+      #     Value: !Ref AppName
+      TimeoutInMinutes: 5
+  InfrastructurePipeline:
+    # DependsOn: [S3CodePipelineArtifactBucket]
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub 
+        - "${tmp}-infrastructure-pipeline"
+        - { tmp: !Select [0, !Split [".", !Ref DomainName]] }
+      RoleArn: !Ref CodePipelineRoleArn
+      Stages:
+      - Name: Source
+        Actions:
+        - Name: source
+          InputArtifacts: []
+          ActionTypeId:
+            Version: "1"
+            Category: Source
+            Owner: ThirdParty
+            Provider: GitHub
+          OutputArtifacts:
+          - Name: SourceArtifact
+          Configuration:
+            Repo: !Ref GitHubRepoName
+            Branch: !Ref GitHubRepoBranch
+            OAuthToken: !Ref GitHubToken
+            Owner: !Ref GitHubUser
+          RunOrder: 1
+      - Name: Build
+        Actions:
+        - Name: build-from-source
+          InputArtifacts:
+          - Name: !Sub "SourceArtifact"
+          ActionTypeId:
+            Category: Build
+            Owner: AWS
+            Version: "1"
+            Provider: CodeBuild
+          OutputArtifacts:
+          - Name: !Sub "BuildArtifact"
+          Configuration:
+            ProjectName: !Sub 
+              - "${tmp}-infrastructure-build"
+              - { tmp: !Select [0, !Split [".", !Ref DomainName]] }
+          RunOrder: 1
+      - Name: Deploy
+        Actions:
+        - Name: create-changeset
+          InputArtifacts:
+          - Name: BuildArtifact
+          ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Version: "1"
+            Provider: CloudFormation
+          OutputArtifacts: []
+          Configuration:
+            StackName: !Sub 
+              - "${tmp}-infrastructure"
+              - { tmp: !Select [0, !Split [".", !Ref DomainName]] }
+            ActionMode: CHANGE_SET_REPLACE
+            RoleArn: !Ref CloudFormationRoleArn
+            ChangeSetName: !Sub
+              - "${tmp}-infrastructure-changeset"
+              - { tmp: !Select [0, !Split [".", !Ref DomainName]] }
+            Capabilities: CAPABILITY_NAMED_IAM
+            TemplatePath: !Sub "BuildArtifact::post-${Template}"
+            TemplateConfiguration: !If [ HasConfigVariables, !Sub "BuildArtifact::${TemplateConfiguration}", !Ref "AWS::NoValue" ]
+          RunOrder: 1
+        - Name: approve-changeSet
+          ActionTypeId:
+            Category: Approval
+            Owner: AWS
+            Provider: Manual
+            Version: '1'
+          Configuration:
+            CustomData: A new change set was created. Do you want to implement the changes?
+          RunOrder: '2'
+        - Name: execute-changeset
+          ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Version: "1"
+            Provider: CloudFormation
+          Configuration:
+            StackName: !Sub 
+              - "${tmp}-infrastructure"
+              - { tmp: !Select [0, !Split [".", !Ref DomainName]] }
+            ActionMode: CHANGE_SET_EXECUTE
+            ChangeSetName: !Sub
+              - "${tmp}-infrastructure-changeset"
+              - { tmp: !Select [0, !Split [".", !Ref DomainName]] }
+          RunOrder: '3'
+      ArtifactStore:
+        Type: S3
+        Location: 
+          Fn::ImportValue:
+            !Sub ${SharedStackName}-S3ArtifactBucketName

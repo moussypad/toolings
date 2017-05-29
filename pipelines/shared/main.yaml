@@ -13,8 +13,18 @@ Resources:
       Parameters:
         DomainName: !Ref DomainName
       TemplateURL: !Sub https://s3-${AWS::Region}.amazonaws.com/toolings/pipelines/shared/codepipeline-artifact-bucket.yaml
+  DefaultServiceRolesStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        DomainName: !Ref DomainName
+      TemplateURL: !Sub https://s3-${AWS::Region}.amazonaws.com/toolings/pipelines/shared/default-service-roles.yaml
 Outputs:
   S3ArtifactBucketName:
     Value: !GetAtt S3ArtifactBucketStack.Outputs.S3ArtifactBucketName
     Export:
       Name: !Sub ${AWS::StackName}-S3ArtifactBucketName
+  DefaultServiceRolesStack:
+    Value: !GetAtt DefaultServiceRolesStack.Outputs.CodePipelineDefaultRoleArn
+    Export:
+      Name: !Sub ${AWS::StackName}-CodePipelineDefaultRole
